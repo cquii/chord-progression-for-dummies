@@ -7,3 +7,6 @@ dist/
 *.tsbuildinfo
 
 .env
+
+# Vendored Ableton beta SDK/CLI — not redistributable; keep local only
+vendor/*.tgz
