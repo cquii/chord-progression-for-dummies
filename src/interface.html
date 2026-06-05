@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chord Progression for Dummies</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    * { margin: 0; }
+    :root {
+      --bg: hsl(245 30% 7%);
+      --panel: hsl(245 22% 11%);
+      --text: hsl(245 15% 86%);
+      --muted: hsl(245 10% 52%);
+      --accent: hsl(266 90% 70%);
+      --accent2: hsl(196 90% 60%);
+    }
+    html { height: 100%; }
+    body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(120% 120% at 50% 0%, hsl(266 40% 14%) 0%, var(--bg) 60%);
+      color: var(--text);
+      font-family: "AbletonSansSmall", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 32px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .tag {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid hsl(245 20% 18%);
+      border-radius: 14px;
+      padding: 18px 20px;
+      max-width: 420px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .card b { color: var(--text); font-weight: 600; }
+    .btn {
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 22px;
+      color: hsl(266 60% 8%);
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+  </style>
+</head>
+<body>
+  <div class="tag">Scaffold · v0.1.0</div>
+  <h1>Chord Progression for Dummies</h1>
+  <div class="card">
+    Folder, decisions and documentation are in place.<br />
+    The <b>genre + mood</b> engine, <b>favorites</b>, <b>per-genre preview</b> and
+    <b>Advanced</b> panel are implemented next.<br /><br />
+    See <b>docs/DECISIONS.md</b> and <b>docs/DESIGN.md</b>.
+  </div>
+  <button class="btn" id="close">Close</button>
+
+  <script>
+    // Injected by the extension before the dialog opens.
+    const LIVE = __LIVE_DATA__;
+
+    const webkit = window.webkit?.messageHandlers?.live;
+    const webview2 = window.chrome?.webview;
+    function close() {
+      const msg = { method: "close_and_send", params: [JSON.stringify({ action: "cancel" })] };
+      if (webkit) webkit.postMessage(msg);
+      else if (webview2) webview2.postMessage(msg);
+    }
+    document.getElementById("close").addEventListener("click", close);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" || e.key === "Enter") close(); });
+  </script>
+</body>
+</html>
