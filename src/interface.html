@@ -50,6 +50,20 @@
     .btn:active, .chip:active, .seg button:active, select:active, .fav-item button:active, .theme-btn:active {
       transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink);
     }
+    /* Visible keyboard focus (yellow ring, both themes) */
+    .btn:focus-visible, .chip:focus-visible, .seg button:focus-visible, select:focus-visible,
+    .fav-item button:focus-visible, .theme-btn:focus-visible, .search:focus-visible,
+    .wkey:focus-visible, .bkey:focus-visible, .toggle input:focus-visible {
+      outline: 2px solid var(--star); outline-offset: 2px;
+    }
+    /* Respect reduced motion: no blink, no press travel */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+      .btn:hover, .chip:hover, .seg button:hover, select:hover, .fav-item button:hover, .theme-btn:hover,
+      .btn:active, .chip:active, .seg button:active, select:active, .fav-item button:active, .theme-btn:active {
+        transform: none !important;
+      }
+    }
 
     .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
     .head h1 { font-size: 12px; font-weight: 700; letter-spacing: 0.01em; flex: 1; }
@@ -119,6 +133,8 @@
     .btn.primary { background: var(--ink); color: var(--paper); }
     .btn.playing { background: var(--ink); color: var(--paper); }
     .btn.saved { color: var(--star); }
+    .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .toolbar2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
 
     /* Disclosure panels */
     details { margin-top: 8px; background: var(--paper); border: 1px solid var(--ink); border-radius: var(--radius); box-shadow: 2px 2px 0 var(--ink); }
@@ -151,7 +167,7 @@
   <header class="head">
     <h1>Chord Progression for Dummies</h1>
     <div class="key" id="keyinfo">—</div>
-    <button class="theme-btn" id="theme" title="Toggle dark mode">☾</button>
+    <button class="theme-btn" id="theme" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
   </header>
 
   <input id="search" class="search" type="text" placeholder="Search genres…" autocomplete="off" />
@@ -179,24 +195,29 @@
   <span class="label">Result</span>
   <div class="result"><div class="cards" id="cards"></div></div>
 
+  <div class="toolbar2">
+    <button class="btn" id="surprise" title="Random genre, mood and key" aria-label="Surprise me with a random genre, mood and key">🎲 Surprise me</button>
+    <button class="btn" id="autoplay" aria-pressed="false" title="Auto-play the preview whenever the scale changes" aria-label="Autoplay preview when the scale changes">▶ Autoplay</button>
+  </div>
+
   <div class="actions">
-    <button class="btn" id="variation">↻ Variation</button>
-    <button class="btn" id="listen">▶ Listen</button>
-    <button class="btn" id="save">☆ Save</button>
-    <button class="btn primary" id="generate">Generate in Live</button>
+    <button class="btn" id="variation" title="New progression, same genre + mood">↻ Variation</button>
+    <button class="btn" id="listen" title="Preview in the browser (does not use your Live instrument)">▶ Listen</button>
+    <button class="btn" id="save" title="Save this progression to Favorites">☆ Save</button>
+    <button class="btn primary" id="generate" title="Write the MIDI clip into the selected Live clip slot">Generate in Live</button>
   </div>
 
   <details id="adv">
     <summary>Advanced options</summary>
     <div class="drawer">
       <div class="adv-grid">
-        <div><span class="mini">Articulation</span><div class="seg" data-adv="articulation"></div></div>
-        <div><span class="mini">Voicing</span><div class="seg" data-adv="voicing"></div></div>
-        <div><span class="mini">Octaves</span><div class="seg" data-adv="octaves"></div></div>
-        <div><span class="mini">Density</span><div class="seg" data-adv="density"></div></div>
-        <div><span class="mini">Gate</span><div class="seg" data-adv="gate"></div></div>
-        <div><span class="mini">Swing</span><div class="seg" data-adv="swing"></div></div>
-        <div class="full"><span class="mini">Intensity</span><div class="seg" data-adv="intensity"></div></div>
+        <div><span class="mini" title="How the chords are played: Block = all at once, Strum = quick roll, Stabs = short hits, Arp = one note at a time">Articulation</span><div class="seg" data-adv="articulation"></div></div>
+        <div><span class="mini" title="Triad = 3 notes, Seventh = richer 4-note chords">Voicing</span><div class="seg" data-adv="voicing"></div></div>
+        <div><span class="mini" title="How many octaves the chord is stacked across">Octaves</span><div class="seg" data-adv="octaves"></div></div>
+        <div><span class="mini" title="How busy the rhythm is (notes per bar)">Density</span><div class="seg" data-adv="density"></div></div>
+        <div><span class="mini" title="How long each note sounds (short = plucky, long = pad)">Gate</span><div class="seg" data-adv="gate"></div></div>
+        <div><span class="mini" title="Groove: pushes off-beats later for a shuffle feel">Swing</span><div class="seg" data-adv="swing"></div></div>
+        <div class="full"><span class="mini" title="Loudness / velocity of the notes">Intensity</span><div class="seg" data-adv="intensity"></div></div>
         <div class="full">
           <label class="toggle"><input type="checkbox" id="adv-humanize" /> Humanize timing &amp; dynamics</label>
         </div>
@@ -369,6 +390,7 @@
     let query = "";
     let advanced = {};   // user overrides; keys: articulation, voicing, octaves, density, gate, swing, intensity, humanize
     let adsrOn = false;
+    let autoplay = false;
 
     function genre() { return GENRES.find(g => g.id === genreId); }
     function mood() { return MOODS.find(m => m.id === moodId); }
@@ -526,6 +548,8 @@
       star.className = "star" + (FAV.genres.includes(g.id) ? " on" : "");
       star.textContent = FAV.genres.includes(g.id) ? "★" : "☆";
       star.title = "Pin to favorites";
+      star.setAttribute("role", "button");
+      star.setAttribute("aria-label", (FAV.genres.includes(g.id) ? "Unpin " : "Pin ") + g.name + " in favorites");
       star.addEventListener("click", (e) => {
         e.stopPropagation();
         if (FAV.genres.includes(g.id)) FAV.genres = FAV.genres.filter(x => x !== g.id);
@@ -535,7 +559,7 @@
       const name = document.createElement("span");
       name.textContent = g.name;
       chip.appendChild(star); chip.appendChild(name);
-      chip.addEventListener("click", () => { genreId = g.id; variationIndex = 0; stopPreview(); renderAll(); });
+      chip.addEventListener("click", () => { genreId = g.id; variationIndex = 0; stopPreview(); renderAll(); maybeAutoplay(); });
       return chip;
     }
 
@@ -547,7 +571,7 @@
         chip.className = "chip";
         chip.setAttribute("aria-pressed", String(m.id === moodId));
         chip.textContent = m.name;
-        chip.addEventListener("click", () => { moodId = m.id; variationIndex = 0; stopPreview(); renderAll(); });
+        chip.addEventListener("click", () => { moodId = m.id; variationIndex = 0; stopPreview(); renderAll(); maybeAutoplay(); });
         wrap.appendChild(chip);
       });
     }
@@ -717,7 +741,27 @@
       const v = (id) => Number(document.getElementById(id).value) / 100;
       return { attack: v("adsr-a"), decay: v("adsr-d"), sustain: v("adsr-s"), release: v("adsr-r") };
     }
+    function maybeAutoplay() { if (autoplay) preview(); }
+
+    function snapshotSession() {
+      FAV.session = { genre: genreId, mood: moodId, root, mode: modeName, advanced, autoplay };
+    }
+
+    function surprise() {
+      genreId = GENRES[Math.floor(Math.random() * GENRES.length)].id;
+      moodId = MOODS[Math.floor(Math.random() * MOODS.length)].id;
+      root = Math.floor(Math.random() * 12);
+      const modes = Object.keys(MODES);
+      modeName = modes[Math.floor(Math.random() * modes.length)];
+      variationIndex = 0;
+      pinnedTemplate = null;
+      document.getElementById("key").value = String(root);
+      document.getElementById("mode").value = modeName;
+      stopPreview(); renderAll(); maybeAutoplay();
+    }
+
     function doGenerate() {
+      snapshotSession();
       const { notes, lengthBeats, template } = generateNotes();
       send({ action: "generate", notes, lengthBeats, clipName: progressionName(template), favorites: FAV, adsr: collectAdsr() });
     }
@@ -737,15 +781,26 @@
     function initSelectors() {
       const keySel = document.getElementById("key");
       NOTE_NAMES.forEach((n, i) => { const o = document.createElement("option"); o.value = i; o.textContent = n; if (i === root) o.selected = true; keySel.appendChild(o); });
-      keySel.addEventListener("change", e => { root = Number(e.target.value); pinnedTemplate = null; stopPreview(); renderAll(); });
+      keySel.addEventListener("change", e => { root = Number(e.target.value); pinnedTemplate = null; stopPreview(); renderAll(); maybeAutoplay(); });
 
       const modeSel = document.getElementById("mode");
       Object.keys(MODES).forEach(m => { const o = document.createElement("option"); o.value = m; o.textContent = m; if (m === modeName) o.selected = true; modeSel.appendChild(o); });
-      modeSel.addEventListener("change", e => { modeName = e.target.value; pinnedTemplate = null; stopPreview(); renderAll(); });
+      modeSel.addEventListener("change", e => { modeName = e.target.value; pinnedTemplate = null; stopPreview(); renderAll(); maybeAutoplay(); });
+    }
+
+    // Restore the last session (genre/mood/key/mode/advanced/autoplay) if saved.
+    if (FAV.session) {
+      const s = FAV.session;
+      if (s.genre && GENRES.some(g => g.id === s.genre)) genreId = s.genre;
+      if (s.mood && MOODS.some(m => m.id === s.mood)) moodId = s.mood;
+      if (typeof s.root === "number") root = ((s.root % 12) + 12) % 12;
+      if (s.mode && MODES[s.mode]) modeName = s.mode;
+      if (s.advanced && typeof s.advanced === "object") advanced = { ...s.advanced };
+      if (typeof s.autoplay === "boolean") autoplay = s.autoplay;
     }
 
     Object.keys(ADV_GROUPS).forEach(buildAdvGroup);
-    document.getElementById("adv-humanize").checked = true;
+    document.getElementById("adv-humanize").checked = advanced.humanize !== false;
     document.getElementById("adv-humanize").addEventListener("change", e => { advanced.humanize = e.target.checked; stopPreview(); });
     document.getElementById("adv-reset").addEventListener("click", () => {
       advanced = {}; adsrOn = false;
@@ -766,13 +821,32 @@
     });
 
     document.getElementById("search").addEventListener("input", e => { query = e.target.value; renderGenres(); });
-    document.getElementById("variation").addEventListener("click", () => { pinnedTemplate = null; variationIndex++; stopPreview(); renderCards(); });
+    document.getElementById("variation").addEventListener("click", () => { pinnedTemplate = null; variationIndex++; stopPreview(); renderCards(); maybeAutoplay(); });
     document.getElementById("listen").addEventListener("click", () => { if (voices.length) stopPreview(); else preview(); });
     document.getElementById("save").addEventListener("click", doSaveProgression);
     document.getElementById("generate").addEventListener("click", doGenerate);
+    document.getElementById("surprise").addEventListener("click", surprise);
+
+    const autoplayBtn = document.getElementById("autoplay");
+    autoplayBtn.setAttribute("aria-pressed", String(autoplay));
+    autoplayBtn.addEventListener("click", () => {
+      autoplay = !autoplay;
+      autoplayBtn.setAttribute("aria-pressed", String(autoplay));
+      if (autoplay) preview();
+    });
+
+    function stepVariation(delta) {
+      pinnedTemplate = null;
+      variationIndex = Math.max(0, variationIndex + delta);
+      stopPreview(); renderCards(); maybeAutoplay();
+    }
+
     document.addEventListener("keydown", e => {
-      if (e.key === "Escape") send({ action: "save", favorites: FAV });
-      if (e.key === "Enter" && e.target.tagName !== "INPUT" && e.target.tagName !== "SELECT") doGenerate();
+      const typing = e.target.tagName === "INPUT" || e.target.tagName === "SELECT";
+      if (e.key === "Escape") { snapshotSession(); send({ action: "save", favorites: FAV }); }
+      if (e.key === "Enter" && !typing) doGenerate();
+      if (e.key === "ArrowRight" && !typing) { e.preventDefault(); stepVariation(1); }
+      if (e.key === "ArrowLeft" && !typing) { e.preventDefault(); stepVariation(-1); }
     });
 
     // Theme — persisted in the favorites file so the last look always returns.

@@ -15,7 +15,7 @@ import interfaceHtml from "./interface.html";
 
 const MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11];
 const DIALOG_WIDTH = 460;
-const DIALOG_HEIGHT = 640;
+const DIALOG_HEIGHT = 680;
 const FAVORITES_FILE = "favorites.json";
 const ADSR_PARAMS = ["Attack", "Decay", "Sustain", "Release"] as const;
 
@@ -27,7 +27,20 @@ type LiveContext = {
   tempo: number;
 };
 
-type FavoritesFile = { genres: string[]; progressions: unknown[]; theme?: "light" | "dark" };
+type SessionState = {
+  genre?: string;
+  mood?: string;
+  root?: number;
+  mode?: string;
+  advanced?: Record<string, unknown>;
+  autoplay?: boolean;
+};
+type FavoritesFile = {
+  genres: string[];
+  progressions: unknown[];
+  theme?: "light" | "dark";
+  session?: SessionState;
+};
 
 type Adsr = { attack: number; decay: number; sustain: number; release: number };
 
@@ -115,6 +128,7 @@ export function activate(activation: ActivationContext) {
         genres: Array.isArray(parsed.genres) ? parsed.genres : [],
         progressions: Array.isArray(parsed.progressions) ? parsed.progressions : [],
         theme: parsed.theme === "dark" ? "dark" : "light",
+        session: parsed.session,
       };
     } catch {
       return empty;
