@@ -97,6 +97,9 @@
     .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
     .field { display: flex; flex-direction: column; gap: 4px; }
     select { height: 25px; padding: 0 7px; outline: none; }
+    select:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+    .field.locked .label { opacity: 0.35; }
+    #autodetect { height: 25px; padding: 0 10px; }
 
     /* Scale piano — floating corner badge ("ad"), 2 octaves, blinking yellow scale */
     .piano-ad {
@@ -134,6 +137,7 @@
     .btn.playing { background: var(--ink); color: var(--paper); }
     .btn.saved { color: var(--star); }
     .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; pointer-events: none; }
     .toolbar2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
 
     /* Disclosure panels */
@@ -182,13 +186,21 @@
   <div class="chips" id="moods"></div>
 
   <div class="row" style="margin-top:8px">
-    <div class="field">
+    <div class="field" id="field-key">
       <span class="label" style="margin:0">Key</span>
       <select id="key"></select>
     </div>
-    <div class="field">
+    <div class="field" id="field-mode">
       <span class="label" style="margin:0">Mode</span>
       <select id="mode"></select>
+    </div>
+    <div class="field">
+      <span class="label" style="margin:0">Scale</span>
+      <button class="btn" id="autodetect" aria-pressed="false" title="Use the scale set in Live (locks Key + Mode)" aria-label="Auto-detect scale from Live">🎯 Auto</button>
+    </div>
+    <div class="field">
+      <span class="label" style="margin:0">Relative</span>
+      <button class="btn" id="relative" title="Switch to the relative major / minor" aria-label="Switch to relative major or minor">↔ Rel</button>
     </div>
   </div>
 
@@ -391,6 +403,7 @@
     let advanced = {};   // user overrides; keys: articulation, voicing, octaves, density, gate, swing, intensity, humanize
     let adsrOn = false;
     let autoplay = false;
+    let autoDetect = false;
 
     function genre() { return GENRES.find(g => g.id === genreId); }
     function mood() { return MOODS.find(m => m.id === moodId); }
@@ -744,7 +757,52 @@
     function maybeAutoplay() { if (autoplay) preview(); }
 
     function snapshotSession() {
-      FAV.session = { genre: genreId, mood: moodId, root, mode: modeName, advanced, autoplay };
+      FAV.session = { genre: genreId, mood: moodId, root, mode: modeName, advanced, autoplay, autoDetect };
+    }
+
+    // Detect the key + mode from Live's current scale snapshot.
+    const SCALE_ALIAS = { Ionian: "Major", Aeolian: "Minor", "Natural Minor": "Minor" };
+    function matchMode(intervals) {
+      if (!Array.isArray(intervals)) return null;
+      const a = JSON.stringify(intervals);
+      for (const [name, vals] of Object.entries(MODES)) if (JSON.stringify(vals) === a) return name;
+      return null;
+    }
+    function detectScale() {
+      const r = ((LIVE.rootNote % 12) + 12) % 12;
+      let mode = "Major";
+      const name = LIVE.scaleName;
+      if (name && MODES[name]) mode = name;
+      else if (name && SCALE_ALIAS[name] && MODES[SCALE_ALIAS[name]]) mode = SCALE_ALIAS[name];
+      else mode = matchMode(LIVE.scaleIntervals) || "Major";
+      return { root: r, mode };
+    }
+
+    function applyAutoDetect(on) {
+      autoDetect = on;
+      const keySel = document.getElementById("key");
+      const modeSel = document.getElementById("mode");
+      const relBtn = document.getElementById("relative");
+      const btn = document.getElementById("autodetect");
+      btn.setAttribute("aria-pressed", String(on));
+      if (on) {
+        const d = detectScale();
+        root = d.root; modeName = d.mode;
+        keySel.value = String(root); modeSel.value = modeName;
+      }
+      keySel.disabled = on; modeSel.disabled = on; relBtn.disabled = on;
+      document.getElementById("field-key").classList.toggle("locked", on);
+      document.getElementById("field-mode").classList.toggle("locked", on);
+      pinnedTemplate = null; stopPreview(); renderAll(); maybeAutoplay();
+    }
+
+    function toRelative() {
+      if (autoDetect) return;
+      if (modeName === "Major") { root = (root + 9) % 12; modeName = "Minor"; }
+      else { root = (root + 3) % 12; modeName = "Major"; }
+      document.getElementById("key").value = String(root);
+      document.getElementById("mode").value = modeName;
+      pinnedTemplate = null; stopPreview(); renderAll(); maybeAutoplay();
     }
 
     function surprise() {
@@ -797,6 +855,7 @@
       if (s.mode && MODES[s.mode]) modeName = s.mode;
       if (s.advanced && typeof s.advanced === "object") advanced = { ...s.advanced };
       if (typeof s.autoplay === "boolean") autoplay = s.autoplay;
+      if (typeof s.autoDetect === "boolean") autoDetect = s.autoDetect;
     }
 
     Object.keys(ADV_GROUPS).forEach(buildAdvGroup);
@@ -826,6 +885,8 @@
     document.getElementById("save").addEventListener("click", doSaveProgression);
     document.getElementById("generate").addEventListener("click", doGenerate);
     document.getElementById("surprise").addEventListener("click", surprise);
+    document.getElementById("autodetect").addEventListener("click", () => applyAutoDetect(!autoDetect));
+    document.getElementById("relative").addEventListener("click", toRelative);
 
     const autoplayBtn = document.getElementById("autoplay");
     autoplayBtn.setAttribute("aria-pressed", String(autoplay));
@@ -865,6 +926,7 @@
     initSelectors();
     renderAll();
     renderFavList();
+    if (autoDetect) applyAutoDetect(true);
   </script>
 </body>
 </html>

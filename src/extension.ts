@@ -15,7 +15,7 @@ import interfaceHtml from "./interface.html";
 
 const MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11];
 const DIALOG_WIDTH = 460;
-const DIALOG_HEIGHT = 680;
+const DIALOG_HEIGHT = 700;
 const FAVORITES_FILE = "favorites.json";
 const ADSR_PARAMS = ["Attack", "Decay", "Sustain", "Release"] as const;
 
