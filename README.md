@@ -6,11 +6,12 @@ progression** — with all the rhythmic/dynamic "feel" chosen for you. Simpler a
 than its sibling [`chord-progression`](../chord-progression); the technical knobs are tucked
 behind an **Advanced** button.
 
-> **Status: scaffold (v0.1.0).** Folder, decisions and documentation are in place and the
-> extension loads in Live with a placeholder dialog. The genre/mood engine, favorites,
-> preview and Advanced panel are the next build pass.
+> **Status: implemented (v1.0.0).** Genre/mood engine, favorites, per-genre preview and the
+> Advanced panel are built. Packaged `.ablx` is ready to install.
 
-## What it will do
+![Panel](docs/screenshot.png)
+
+## What it does
 
 - **Genre** — a big, searchable list (~24) with your favorites pinned on top.
 - **Mood** — Happy, Sad, Dark, Dreamy, Energetic, Chill, Romantic, Epic.

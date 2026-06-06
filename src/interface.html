@@ -7,92 +7,727 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     * { margin: 0; }
+    button, input, select { font: inherit; color: inherit; }
+
     :root {
-      --bg: hsl(245 30% 7%);
+      --bg: hsl(245 28% 7%);
       --panel: hsl(245 22% 11%);
-      --text: hsl(245 15% 86%);
-      --muted: hsl(245 10% 52%);
+      --panel-2: hsl(245 20% 14%);
+      --chip: hsl(245 18% 16%);
+      --chip-hover: hsl(245 18% 20%);
+      --border: hsl(245 20% 18%);
+      --text: hsl(245 14% 88%);
+      --muted: hsl(245 10% 55%);
       --accent: hsl(266 90% 70%);
-      --accent2: hsl(196 90% 60%);
+      --accent-2: hsl(196 90% 60%);
+      --accent-text: hsl(266 60% 8%);
+      --star: hsl(45 100% 65%);
+      --radius: 11px;
     }
+
     html { height: 100%; }
     body {
-      height: 100%;
-      margin: 0;
-      background: radial-gradient(120% 120% at 50% 0%, hsl(266 40% 14%) 0%, var(--bg) 60%);
+      min-height: 100%;
+      background: radial-gradient(130% 120% at 50% -10%, hsl(266 35% 13%) 0%, var(--bg) 55%);
       color: var(--text);
       font-family: "AbletonSansSmall", system-ui, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      padding: 32px;
-      text-align: center;
-    }
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .tag {
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .card {
-      background: var(--panel);
-      border: 1px solid hsl(245 20% 18%);
-      border-radius: 14px;
-      padding: 18px 20px;
-      max-width: 420px;
       font-size: 13px;
-      line-height: 1.6;
-      color: var(--muted);
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      padding: 16px 18px 18px;
     }
-    .card b { color: var(--text); font-weight: 600; }
+
+    .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .head h1 {
+      font-size: 16px; font-weight: 700; letter-spacing: 0.01em;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .head .key { font-size: 12px; color: var(--muted); }
+    .head .key b { color: var(--accent); font-weight: 600; }
+
+    .label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); margin: 12px 0 7px; }
+    .label:first-child { margin-top: 0; }
+
+    .search {
+      width: 100%; height: 30px; background: var(--panel); color: var(--text);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 0 12px; outline: none;
+    }
+    .search::placeholder { color: var(--muted); }
+    .search:focus { border-color: var(--accent); }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 11px; border-radius: 999px; background: var(--chip);
+      border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+      transition: background 0.1s ease;
+    }
+    .chip:hover { background: var(--chip-hover); }
+    .chip[aria-pressed="true"] { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: var(--accent-text); font-weight: 600; }
+    .chip .star { font-size: 12px; color: var(--muted); cursor: pointer; }
+    .chip .star.on { color: var(--star); }
+    .chip[aria-pressed="true"] .star { color: var(--accent-text); }
+    .chip[aria-pressed="true"] .star.on { color: hsl(45 100% 40%); }
+
+    .genre-scroll { max-height: 132px; overflow-y: auto; padding: 2px; }
+
+    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    select {
+      height: 30px; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 9px; padding: 0 8px; outline: none; cursor: pointer;
+    }
+    select:focus { border-color: var(--accent); }
+
+    /* Result cards */
+    .result { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-top: 6px; }
+    .cards { display: flex; gap: 8px; align-items: stretch; }
+    .card { background: var(--panel-2); border-radius: var(--radius); padding: 12px 6px 10px; text-align: center; min-width: 0; }
+    .card .roman { font-size: 10px; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
+    .card .name { font-size: 19px; font-weight: 700; line-height: 1.1; }
+    .card .name span { color: var(--accent); font-weight: 600; font-size: 14px; }
+    .card .tones { font-size: 9px; letter-spacing: 0.12em; color: var(--muted); margin-top: 5px; }
+    .card .bars { font-size: 9px; color: var(--muted); margin-top: 3px; opacity: 0.7; }
+
+    /* Action row */
+    .actions { display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; gap: 8px; margin-top: 12px; }
     .btn {
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      border-radius: 999px;
-      padding: 10px 22px;
-      color: hsl(266 60% 8%);
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      padding: 11px 10px; border-radius: var(--radius); background: var(--chip);
+      cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 7px;
+      border: 1px solid var(--border); transition: background 0.1s ease;
     }
+    .btn:hover { background: var(--chip-hover); }
+    .btn.primary { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: var(--accent-text); border-color: transparent; }
+    .btn.primary:hover { filter: brightness(1.08); }
+    .btn.playing { background: linear-gradient(90deg, var(--accent-2), var(--accent)); color: var(--accent-text); }
+    .btn.saved { color: var(--star); }
+
+    /* Disclosure panels */
+    details { margin-top: 12px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); }
+    summary { cursor: pointer; padding: 10px 12px; font-weight: 600; color: var(--muted); list-style: none; user-select: none; }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: "▸ "; color: var(--accent); }
+    details[open] summary::before { content: "▾ "; }
+    .drawer { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 10px; }
+
+    .seg { display: flex; flex-wrap: wrap; gap: 4px; }
+    .seg button { flex: 1 1 auto; padding: 6px 8px; border-radius: 8px; background: var(--chip); cursor: pointer; white-space: nowrap; }
+    .seg button:hover { background: var(--chip-hover); }
+    .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+    .adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .adv-grid .full { grid-column: 1 / -1; }
+    .mini { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; display: block; }
+    .slider-row { display: flex; align-items: center; gap: 8px; }
+    .slider-row input[type=range] { flex: 1; accent-color: var(--accent); }
+    .slider-row .v { width: 30px; text-align: right; color: var(--muted); font-size: 11px; }
+    .toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+    .toggle input { accent-color: var(--accent); }
+
+    .fav-list { display: flex; flex-direction: column; gap: 6px; }
+    .fav-item { display: flex; align-items: center; gap: 8px; background: var(--panel-2); border-radius: 8px; padding: 7px 10px; }
+    .fav-item .fav-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fav-item button { padding: 4px 9px; border-radius: 7px; background: var(--chip); cursor: pointer; }
+    .fav-item button:hover { background: var(--chip-hover); }
+    .fav-empty { color: var(--muted); font-size: 12px; padding: 4px 2px; }
   </style>
 </head>
 <body>
-  <div class="tag">Scaffold · v0.1.0</div>
-  <h1>Chord Progression for Dummies</h1>
-  <div class="card">
-    Folder, decisions and documentation are in place.<br />
-    The <b>genre + mood</b> engine, <b>favorites</b>, <b>per-genre preview</b> and
-    <b>Advanced</b> panel are implemented next.<br /><br />
-    See <b>docs/DECISIONS.md</b> and <b>docs/DESIGN.md</b>.
+  <header class="head">
+    <h1>Chord Progression for Dummies</h1>
+    <div class="key" id="keyinfo">—</div>
+  </header>
+
+  <input id="search" class="search" type="text" placeholder="Search genres…" autocomplete="off" />
+
+  <span class="label" id="fav-genre-label" style="display:none">Favorite genres</span>
+  <div class="chips" id="fav-genres" style="display:none"></div>
+
+  <span class="label">Genre</span>
+  <div class="genre-scroll"><div class="chips" id="genres"></div></div>
+
+  <span class="label">Mood</span>
+  <div class="chips" id="moods"></div>
+
+  <div class="row" style="margin-top:12px">
+    <div class="field">
+      <span class="label" style="margin:0">Key</span>
+      <select id="key"></select>
+    </div>
+    <div class="field">
+      <span class="label" style="margin:0">Mode</span>
+      <select id="mode"></select>
+    </div>
   </div>
-  <button class="btn" id="close">Close</button>
+
+  <span class="label">Result</span>
+  <div class="result"><div class="cards" id="cards"></div></div>
+
+  <div class="actions">
+    <button class="btn" id="variation">↻ Variation</button>
+    <button class="btn" id="listen">▶ Listen</button>
+    <button class="btn" id="save">☆ Save</button>
+    <button class="btn primary" id="generate">Generate in Live</button>
+  </div>
+
+  <details id="adv">
+    <summary>Advanced options</summary>
+    <div class="drawer">
+      <div class="adv-grid">
+        <div><span class="mini">Articulation</span><div class="seg" data-adv="articulation"></div></div>
+        <div><span class="mini">Voicing</span><div class="seg" data-adv="voicing"></div></div>
+        <div><span class="mini">Octaves</span><div class="seg" data-adv="octaves"></div></div>
+        <div><span class="mini">Density</span><div class="seg" data-adv="density"></div></div>
+        <div><span class="mini">Gate</span><div class="seg" data-adv="gate"></div></div>
+        <div><span class="mini">Swing</span><div class="seg" data-adv="swing"></div></div>
+        <div class="full"><span class="mini">Intensity</span><div class="seg" data-adv="intensity"></div></div>
+        <div class="full">
+          <label class="toggle"><input type="checkbox" id="adv-humanize" /> Humanize timing &amp; dynamics</label>
+        </div>
+      </div>
+      <div>
+        <label class="toggle"><input type="checkbox" id="adsr-on" /> Shape instrument ADSR (best-effort — only if the instrument exposes it)</label>
+        <div id="adsr-sliders" style="margin-top:8px; display:none">
+          <div class="adv-grid">
+            <div><span class="mini">Attack</span><div class="slider-row"><input type="range" id="adsr-a" min="0" max="100" value="10"><span class="v" id="adsr-a-v">10</span></div></div>
+            <div><span class="mini">Decay</span><div class="slider-row"><input type="range" id="adsr-d" min="0" max="100" value="40"><span class="v" id="adsr-d-v">40</span></div></div>
+            <div><span class="mini">Sustain</span><div class="slider-row"><input type="range" id="adsr-s" min="0" max="100" value="70"><span class="v" id="adsr-s-v">70</span></div></div>
+            <div><span class="mini">Release</span><div class="slider-row"><input type="range" id="adsr-r" min="0" max="100" value="35"><span class="v" id="adsr-r-v">35</span></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="adv-reset" style="align-self:flex-start; padding:7px 14px">Reset to genre + mood</button>
+    </div>
+  </details>
+
+  <details id="favpanel">
+    <summary>Favorites</summary>
+    <div class="drawer"><div class="fav-list" id="fav-list"></div></div>
+  </details>
 
   <script>
-    // Injected by the extension before the dialog opens.
-    const LIVE = __LIVE_DATA__;
+    const APP = __APP_DATA__;
+    const LIVE = APP.live;
+    let FAV = APP.favorites && APP.favorites.genres ? APP.favorites : { genres: [], progressions: [] };
 
+    // ── Host bridge ──────────────────────────────────────────────────────
     const webkit = window.webkit?.messageHandlers?.live;
     const webview2 = window.chrome?.webview;
-    function close() {
-      const msg = { method: "close_and_send", params: [JSON.stringify({ action: "cancel" })] };
+    function send(result) {
+      const msg = { method: "close_and_send", params: [JSON.stringify(result)] };
       if (webkit) webkit.postMessage(msg);
       else if (webview2) webview2.postMessage(msg);
     }
-    document.getElementById("close").addEventListener("click", close);
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape" || e.key === "Enter") close(); });
+
+    // ── Music theory ─────────────────────────────────────────────────────
+    const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+    const ROMAN = ["I","II","III","IV","V","VI","VII"];
+    const CHORD_BASE = 48;
+    const BEATS_PER_BAR = 4;
+
+    const MODES = {
+      Major:        [0,2,4,5,7,9,11],
+      Minor:        [0,2,3,5,7,8,10],
+      Dorian:       [0,2,3,5,7,9,10],
+      Phrygian:     [0,1,3,5,7,8,10],
+      Lydian:       [0,2,4,6,7,9,11],
+      Mixolydian:   [0,2,4,5,7,9,10],
+      "Harmonic Minor": [0,2,3,5,7,8,11],
+    };
+    const MODE_ABBR = { Major:"maj", Minor:"min", Dorian:"dor", Phrygian:"phr", Lydian:"lyd", Mixolydian:"mix", "Harmonic Minor":"hm" };
+
+    function scaleTone(intervals, idx) {
+      const n = intervals.length;
+      return intervals[((idx % n) + n) % n] + 12 * Math.floor(idx / n);
+    }
+    function buildChord(rootMidi, intervals, degree, seventh) {
+      const steps = seventh ? [0,2,4,6] : [0,2,4];
+      return steps.map(s => rootMidi + scaleTone(intervals, degree + s));
+    }
+    function describeChord(rootMidi, intervals, degree, seventh) {
+      const pitches = buildChord(rootMidi, intervals, degree, seventh);
+      const pcs = pitches.map(p => (((p - pitches[0]) % 12) + 12) % 12);
+      const third = pcs[1], fifth = pcs[2], sev = pcs.length > 3 ? pcs[3] : null;
+      const minorish = third === 3, dim = third === 3 && fifth === 6, aug = third === 4 && fifth === 8;
+      let suffix;
+      if (sev === null) suffix = dim ? "dim" : aug ? "aug" : minorish ? "m" : "";
+      else if (dim) suffix = sev === 9 ? "dim7" : "m7b5";
+      else if (minorish) suffix = "m7";
+      else if (sev === 11) suffix = "maj7";
+      else suffix = "7";
+      let roman = ROMAN[degree % 7];
+      roman = minorish ? roman.toLowerCase() : roman;
+      if (dim) roman += "°"; else if (aug) roman += "+";
+      const rootName = NOTE_NAMES[pitches[0] % 12];
+      const tones = [...new Set(pitches.map(p => NOTE_NAMES[p % 12]))].join(" ");
+      return { roman, rootName, suffix, tones, pitches };
+    }
+
+    // ── Content: moods, genres, templates ────────────────────────────────
+    const MOODS = [
+      { id:"happy",     name:"Happy",     chars:["bright"],          feel:{articulation:"strum", octaves:2, density:"normal", swing:0.08, velocity:104, dynamics:0.5, gateMul:1.0} },
+      { id:"sad",       name:"Sad",       chars:["sad"],             feel:{articulation:"block", octaves:1, density:"sparse", swing:0.0,  velocity:80,  dynamics:0.25, gateMul:1.2} },
+      { id:"dark",      name:"Dark",      chars:["dark"],            feel:{articulation:"stabs", octaves:1, density:"normal", swing:0.0,  velocity:92,  dynamics:0.3,  gateMul:0.95} },
+      { id:"dreamy",    name:"Dreamy",    chars:["dreamy"],          feel:{articulation:"arp",   octaves:2, density:"sparse", swing:0.08, velocity:74,  dynamics:0.25, gateMul:1.3} },
+      { id:"energetic", name:"Energetic", chars:["driving"],         feel:{articulation:"stabs", octaves:2, density:"busy",   swing:0.16, velocity:112, dynamics:0.7,  gateMul:0.8} },
+      { id:"chill",     name:"Chill",     chars:["smooth"],          feel:{articulation:"strum", octaves:1, density:"normal", swing:0.16, velocity:84,  dynamics:0.4,  gateMul:1.0} },
+      { id:"romantic",  name:"Romantic",  chars:["rich"],            feel:{articulation:"arp",   octaves:2, density:"normal", swing:0.08, velocity:90,  dynamics:0.45, gateMul:1.2} },
+      { id:"epic",      name:"Epic",      chars:["epic"],            feel:{articulation:"block", octaves:3, density:"normal", swing:0.0,  velocity:115, dynamics:0.8,  gateMul:1.3} },
+    ];
+
+    // tone ∈ piano|ep|pad|pluck|synth ; barScale stretches per-chord bars
+    const GENRES = [
+      { id:"pop",        name:"Pop",            group:"Pop / Rock", tone:"piano", barScale:1,   seventh:false, chars:["bright","smooth"] },
+      { id:"rock",       name:"Rock",           group:"Pop / Rock", tone:"pluck", barScale:1,   seventh:false, chars:["bright","driving"] },
+      { id:"indie",      name:"Indie",          group:"Pop / Rock", tone:"ep",    barScale:1,   seventh:true,  chars:["bright","dreamy"] },
+      { id:"folk",       name:"Folk / Acoustic",group:"Pop / Rock", tone:"piano", barScale:1,   seventh:false, chars:["bright","smooth"] },
+      { id:"country",    name:"Country",        group:"Pop / Rock", tone:"pluck", barScale:1,   seventh:false, chars:["bright","smooth"] },
+      { id:"trap",       name:"Trap / Hip-Hop", group:"Urban",      tone:"pad",   barScale:1,   seventh:true,  chars:["dark","sad"] },
+      { id:"rnb",        name:"R&B / Soul",     group:"Urban",      tone:"ep",    barScale:1,   seventh:true,  chars:["rich","smooth"] },
+      { id:"funk",       name:"Funk",           group:"Urban",      tone:"pluck", barScale:1,   seventh:true,  chars:["driving","smooth"] },
+      { id:"reggaeton",  name:"Reggaeton / Latin",group:"Urban",    tone:"pluck", barScale:1,   seventh:false, chars:["driving","dark"] },
+      { id:"afrobeat",   name:"Afrobeat",       group:"Urban",      tone:"pluck", barScale:1,   seventh:true,  chars:["bright","driving"] },
+      { id:"house",      name:"House",          group:"Electronic", tone:"pluck", barScale:1,   seventh:true,  chars:["driving","smooth"] },
+      { id:"deephouse",  name:"Deep House",     group:"Electronic", tone:"pad",   barScale:2,   seventh:true,  chars:["smooth","dreamy"] },
+      { id:"techno",     name:"Techno",         group:"Electronic", tone:"synth", barScale:1,   seventh:false, chars:["dark","driving"] },
+      { id:"trance",     name:"Trance",         group:"Electronic", tone:"synth", barScale:2,   seventh:false, chars:["epic","driving"] },
+      { id:"synthwave",  name:"Synthwave",      group:"Electronic", tone:"synth", barScale:1,   seventh:true,  chars:["dark","epic"] },
+      { id:"futurebass", name:"Future Bass",    group:"Electronic", tone:"synth", barScale:1,   seventh:true,  chars:["bright","epic"] },
+      { id:"dubstep",    name:"Dubstep",        group:"Electronic", tone:"synth", barScale:1,   seventh:false, chars:["dark","driving"] },
+      { id:"dnb",        name:"Drum & Bass",    group:"Electronic", tone:"pluck", barScale:0.5, seventh:true,  chars:["driving","dark"] },
+      { id:"jazz",       name:"Jazz",           group:"Jazz / Roots", tone:"piano", barScale:1, seventh:true,  chars:["rich","smooth"] },
+      { id:"blues",      name:"Blues",          group:"Jazz / Roots", tone:"piano", barScale:1, seventh:true,  chars:["smooth","sad"] },
+      { id:"gospel",     name:"Gospel",         group:"Jazz / Roots", tone:"piano", barScale:1, seventh:true,  chars:["rich","bright"] },
+      { id:"cinematic",  name:"Cinematic",      group:"Screen",     tone:"pad",   barScale:2,   seventh:false, chars:["epic","dark"] },
+      { id:"ambient",    name:"Ambient",        group:"Screen",     tone:"pad",   barScale:2,   seventh:true,  chars:["dreamy","smooth"] },
+      { id:"lofi",       name:"Lo-Fi",          group:"Screen",     tone:"ep",    barScale:1,   seventh:true,  chars:["dreamy","sad","smooth"] },
+    ];
+
+    // degree is 0-based diatonic index into the chosen mode; quality emerges from the mode
+    const TEMPLATES = [
+      { chars:["bright","smooth"], degrees:[[0,1],[4,1],[5,1],[3,1]] },           // I V vi IV
+      { chars:["bright"],          degrees:[[0,1],[3,1],[4,1],[4,1]] },           // I IV V V
+      { chars:["bright","sad"],    degrees:[[5,1],[3,1],[0,1],[4,1]] },           // vi IV I V (axis)
+      { chars:["sad","dreamy"],    degrees:[[0,2],[5,2],[2,2],[6,2]] },           // i VI III VII
+      { chars:["sad","dark"],      degrees:[[0,1],[3,1],[4,1],[0,1]] },           // i iv v i
+      { chars:["dark","driving"],  degrees:[[0,1],[6,1],[5,1],[6,1]] },           // i VII VI VII
+      { chars:["dark","sad"],      degrees:[[0,1],[5,1],[3,1],[4,1]] },           // i VI iv V
+      { chars:["dark"],            degrees:[[0,1],[4,1],[3,1],[0,1]] },           // i v iv i
+      { chars:["dreamy","smooth"], degrees:[[0,2],[3,2]] },                       // Imaj7 IVmaj7
+      { chars:["dreamy","epic"],   degrees:[[0,2],[2,2],[6,2],[5,2]] },           // i III VII VI
+      { chars:["driving","dark"],  degrees:[[0,1],[0,1],[5,1],[6,1]] },           // i i VI VII
+      { chars:["driving","bright"],degrees:[[0,1],[0,1],[3,1],[4,1]] },           // I I IV V
+      { chars:["smooth","rich"],   degrees:[[1,1],[4,1],[0,2],[5,1]] },           // ii V I vi
+      { chars:["smooth","rich"],   degrees:[[1,1],[4,1],[0,1],[0,1]] },           // ii V I I
+      { chars:["rich","smooth"],   degrees:[[0,1],[5,1],[1,1],[4,1]] },           // I vi ii V
+      { chars:["rich"],            degrees:[[2,1],[5,1],[1,1],[4,1]] },           // iii vi ii V
+      { chars:["epic","bright"],   degrees:[[0,2],[4,2],[5,2],[3,2]] },           // I V vi IV (big)
+      { chars:["epic","dark"],     degrees:[[0,2],[5,1],[5,1],[4,2]] },           // i VI VI V (build)
+    ];
+
+    // ── State ────────────────────────────────────────────────────────────
+    const ADV_GROUPS = {
+      articulation: ["block","strum","stabs","arp"],
+      voicing: ["triad","seventh"],
+      octaves: ["1","2","3"],
+      density: ["sparse","normal","busy"],
+      gate: ["short","medium","long"],
+      swing: ["straight","light","medium","heavy"],
+      intensity: ["soft","normal","hard"],
+    };
+    const SWING_VAL = { straight:0, light:0.08, medium:0.16, heavy:0.25 };
+    const GATE_VAL  = { short:0.45, medium:0.72, long:0.95 };
+    const VEL_VAL   = { soft:74, normal:96, hard:116 };
+    const DENSITY_STEP = { sparse:1, normal:0.5, busy:0.25 };
+
+    let genreId = GENRES[0].id;
+    let moodId = "happy";
+    let root = LIVE.rootNote % 12;
+    let modeName = LIVE.scaleMode && LIVE.scaleName && MODES[LIVE.scaleName] ? LIVE.scaleName : "Major";
+    let variationIndex = 0;
+    let query = "";
+    let advanced = {};   // user overrides; keys: articulation, voicing, octaves, density, gate, swing, intensity, humanize
+    let adsrOn = false;
+
+    function genre() { return GENRES.find(g => g.id === genreId); }
+    function mood() { return MOODS.find(m => m.id === moodId); }
+
+    // ── Feel resolution ──────────────────────────────────────────────────
+    function resolveFeel() {
+      const g = genre(), m = mood();
+      const base = {
+        articulation: m.feel.articulation,
+        voicing: g.seventh ? "seventh" : "triad",
+        octaves: m.feel.octaves,
+        density: m.feel.density,
+        gate: GATE_VAL[gateNameFromMul(m.feel.gateMul)],
+        swing: m.feel.swing,
+        velocity: m.feel.velocity,
+        dynamics: m.feel.dynamics,
+        humanize: true,
+      };
+      // advanced overrides
+      if (advanced.articulation) base.articulation = advanced.articulation;
+      if (advanced.voicing) base.voicing = advanced.voicing;
+      if (advanced.octaves) base.octaves = Number(advanced.octaves);
+      if (advanced.density) base.density = advanced.density;
+      if (advanced.gate) base.gate = GATE_VAL[advanced.gate];
+      if (advanced.swing) base.swing = SWING_VAL[advanced.swing];
+      if (advanced.intensity) base.velocity = VEL_VAL[advanced.intensity];
+      if (advanced.humanize !== undefined) base.humanize = advanced.humanize;
+      return base;
+    }
+    function gateNameFromMul(mul) { return mul <= 0.85 ? "short" : mul >= 1.2 ? "long" : "medium"; }
+
+    // ── Template selection ───────────────────────────────────────────────
+    function candidateTemplates() {
+      const want = new Set([...genre().chars, ...mood().chars]);
+      const hits = TEMPLATES.filter(t => t.chars.some(c => want.has(c)));
+      return hits.length ? hits : TEMPLATES.slice();
+    }
+    function currentTemplate() {
+      const cands = candidateTemplates();
+      if (variationIndex >= cands.length) {
+        // random diatonic fallback
+        const len = 4;
+        const degs = [];
+        for (let i = 0; i < len; i++) degs.push([i === 0 ? 0 : Math.floor(Math.random() * 7), 1]);
+        return scaleBars({ degrees: degs });
+      }
+      return scaleBars(cands[variationIndex % cands.length]);
+    }
+    function scaleBars(t) {
+      const s = genre().barScale;
+      return { degrees: t.degrees.map(([d, b]) => [d, Math.max(0.5, b * s)]) };
+    }
+
+    // ── Note generation ──────────────────────────────────────────────────
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    function generateNotes() {
+      const intervals = MODES[modeName];
+      const rootMidi = CHORD_BASE + root;
+      const feel = resolveFeel();
+      const tmpl = currentTemplate();
+      const seventh = feel.voicing === "seventh";
+      const step = DENSITY_STEP[feel.density];
+      const notes = [];
+      let barOffset = 0;
+
+      for (const [degree, bars] of tmpl.degrees) {
+        const chordStart = barOffset * BEATS_PER_BAR;
+        const span = bars * BEATS_PER_BAR;
+        let pitches = buildChord(rootMidi, intervals, degree, seventh);
+        const oct = feel.octaves;
+        const full = pitches.slice();
+        for (let o = 1; o < oct; o++) for (const p of pitches) full.push(p + 12 * o);
+        pitches = full;
+
+        const vel = (i, total) => {
+          // accent the first hit of the chord based on dynamics
+          const accent = i === 0 ? 1 : 1 - feel.dynamics * 0.5;
+          return clamp(Math.round(feel.velocity * accent), 1, 127);
+        };
+
+        const push = (pitch, t, dur, v) => {
+          let tt = t, vv = v;
+          const note = { pitch };
+          if (feel.humanize) { tt += (Math.random() - 0.5) * 0.025; vv = clamp(Math.round(vv + (Math.random() - 0.5) * 14), 1, 127); note.velocityDeviation = 7; }
+          note.startTime = Math.max(0, +tt.toFixed(4));
+          note.duration = Math.max(0.05, +dur.toFixed(4));
+          note.velocity = vv;
+          notes.push(note);
+        };
+
+        if (feel.articulation === "block") {
+          const dur = span * feel.gate;
+          pitches.forEach((p, i) => push(p, chordStart, dur, vel(0)));
+        } else if (feel.articulation === "strum") {
+          const dur = span * feel.gate;
+          const gap = Math.min(0.09, step * 0.5);
+          pitches.forEach((p, i) => push(p, chordStart + i * gap, dur - i * gap, vel(0)));
+        } else if (feel.articulation === "arp") {
+          const order = [...pitches].sort((a, b) => a - b);
+          const steps = Math.max(1, Math.round(span / step));
+          for (let s = 0; s < steps; s++) {
+            let t = chordStart + s * step;
+            if (s % 2 === 1) t += step * feel.swing;
+            push(order[s % order.length], t, step * feel.gate, vel(s));
+          }
+        } else { // stabs
+          const steps = Math.max(1, Math.round(span / step));
+          for (let s = 0; s < steps; s++) {
+            let t = chordStart + s * step;
+            if (s % 2 === 1) t += step * feel.swing;
+            pitches.forEach(p => push(p, t, step * feel.gate, vel(s)));
+          }
+        }
+        barOffset += bars;
+      }
+      return { notes, lengthBeats: barOffset * BEATS_PER_BAR, template: tmpl, feel };
+    }
+
+    function progressionName(tmpl) {
+      const intervals = MODES[modeName];
+      const rootMidi = CHORD_BASE + root;
+      const seventh = (advanced.voicing ? advanced.voicing === "seventh" : genre().seventh);
+      const romans = tmpl.degrees.map(([d]) => describeChord(rootMidi, intervals, d, seventh).roman).join("-");
+      return `${NOTE_NAMES[root]}${MODE_ABBR[modeName]} · ${genre().name} · ${romans}`;
+    }
+
+    // ── Rendering ────────────────────────────────────────────────────────
+    function renderKeyInfo() {
+      document.getElementById("keyinfo").innerHTML =
+        `<b>${NOTE_NAMES[root]} ${modeName}</b> · ${genre().name} / ${mood().name} · ${Math.round(LIVE.tempo)} BPM`;
+    }
+
+    function renderGenres() {
+      const favWrap = document.getElementById("fav-genres");
+      const favLabel = document.getElementById("fav-genre-label");
+      favWrap.innerHTML = "";
+      const favs = GENRES.filter(g => FAV.genres.includes(g.id));
+      favLabel.style.display = favs.length ? "" : "none";
+      favWrap.style.display = favs.length ? "" : "none";
+      favs.forEach(g => favWrap.appendChild(genreChip(g)));
+
+      const list = document.getElementById("genres");
+      list.innerHTML = "";
+      const q = query.toLowerCase();
+      GENRES.filter(g => !q || g.name.toLowerCase().includes(q) || g.group.toLowerCase().includes(q) || g.chars.some(c => c.includes(q)))
+        .forEach(g => list.appendChild(genreChip(g)));
+    }
+
+    function genreChip(g) {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.setAttribute("aria-pressed", String(g.id === genreId));
+      const star = document.createElement("span");
+      star.className = "star" + (FAV.genres.includes(g.id) ? " on" : "");
+      star.textContent = FAV.genres.includes(g.id) ? "★" : "☆";
+      star.title = "Pin to favorites";
+      star.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (FAV.genres.includes(g.id)) FAV.genres = FAV.genres.filter(x => x !== g.id);
+        else FAV.genres.push(g.id);
+        renderGenres();
+      });
+      const name = document.createElement("span");
+      name.textContent = g.name;
+      chip.appendChild(star); chip.appendChild(name);
+      chip.addEventListener("click", () => { genreId = g.id; variationIndex = 0; stopPreview(); renderAll(); });
+      return chip;
+    }
+
+    function renderMoods() {
+      const wrap = document.getElementById("moods");
+      wrap.innerHTML = "";
+      MOODS.forEach(m => {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.setAttribute("aria-pressed", String(m.id === moodId));
+        chip.textContent = m.name;
+        chip.addEventListener("click", () => { moodId = m.id; variationIndex = 0; stopPreview(); renderAll(); });
+        wrap.appendChild(chip);
+      });
+    }
+
+    function renderCards() {
+      const intervals = MODES[modeName];
+      const rootMidi = CHORD_BASE + root;
+      const seventh = (advanced.voicing ? advanced.voicing === "seventh" : genre().seventh);
+      const tmpl = currentTemplate();
+      const cards = document.getElementById("cards");
+      cards.innerHTML = "";
+      tmpl.degrees.forEach(([d, bars]) => {
+        const c = describeChord(rootMidi, intervals, d, seventh);
+        const el = document.createElement("div");
+        el.className = "card";
+        el.style.flex = String(bars);
+        el.innerHTML =
+          `<div class="roman">${c.roman}</div>` +
+          `<div class="name">${c.rootName}<span>${c.suffix}</span></div>` +
+          `<div class="tones">${c.tones}</div>` +
+          `<div class="bars">${bars % 1 === 0 ? bars : bars.toFixed(1)} bar${bars === 1 ? "" : "s"}</div>`;
+        cards.appendChild(el);
+      });
+    }
+
+    function renderFavList() {
+      const list = document.getElementById("fav-list");
+      list.innerHTML = "";
+      if (!FAV.progressions.length) { list.innerHTML = '<div class="fav-empty">No saved progressions yet — hit ☆ Save.</div>'; return; }
+      FAV.progressions.forEach((p, idx) => {
+        const item = document.createElement("div");
+        item.className = "fav-item";
+        const name = document.createElement("div");
+        name.className = "fav-name"; name.textContent = p.name;
+        const load = document.createElement("button"); load.textContent = "Load";
+        load.addEventListener("click", () => loadFavorite(p));
+        const del = document.createElement("button"); del.textContent = "✕";
+        del.addEventListener("click", () => { FAV.progressions.splice(idx, 1); renderFavList(); });
+        item.appendChild(name); item.appendChild(load); item.appendChild(del);
+        list.appendChild(item);
+      });
+    }
+
+    function loadFavorite(p) {
+      genreId = p.genre; moodId = p.mood; root = p.root; modeName = p.mode;
+      // store the exact template so it reproduces; use a sentinel variation
+      pinnedTemplate = p.template;
+      stopPreview(); renderAll();
+    }
+    let pinnedTemplate = null;
+
+    // override currentTemplate to honor a pinned favorite until the user varies
+    const _currentTemplate = currentTemplate;
+    currentTemplate = function () {
+      if (pinnedTemplate) return pinnedTemplate;
+      return _currentTemplate();
+    };
+
+    function renderAll() {
+      renderKeyInfo();
+      renderGenres();
+      renderMoods();
+      renderCards();
+    }
+
+    // ── Advanced controls ────────────────────────────────────────────────
+    function buildAdvGroup(name) {
+      const container = document.querySelector(`[data-adv="${name}"]`);
+      container.innerHTML = "";
+      ADV_GROUPS[name].forEach(value => {
+        const b = document.createElement("button");
+        b.textContent = value;
+        b.setAttribute("aria-pressed", String(advanced[name] === value));
+        b.addEventListener("click", () => {
+          advanced[name] = advanced[name] === value ? undefined : value;
+          for (const c of container.children) c.setAttribute("aria-pressed", String(c === b && advanced[name] === value));
+          pinnedTemplate = null; stopPreview(); renderCards();
+        });
+        container.appendChild(b);
+      });
+    }
+
+    // ── Web Audio preview ────────────────────────────────────────────────
+    const TONES = {
+      piano:{ type:"triangle", attack:0.004, release:0.5, gain:0.16 },
+      ep:   { type:"sine",     attack:0.01,  release:0.7, gain:0.18 },
+      pad:  { type:"sawtooth", attack:0.12,  release:1.4, gain:0.10 },
+      pluck:{ type:"square",   attack:0.002, release:0.18,gain:0.10 },
+      synth:{ type:"sawtooth", attack:0.01,  release:0.4, gain:0.10 },
+    };
+    let audioCtx = null, master = null, voices = [];
+    function ensureAudio() {
+      if (audioCtx) return;
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new Ctx();
+      const comp = audioCtx.createDynamicsCompressor();
+      master = audioCtx.createGain(); master.gain.value = 0.9;
+      master.connect(comp).connect(audioCtx.destination);
+    }
+    function stopPreview() {
+      for (const v of voices) { try { v.stop(); } catch (e) {} }
+      voices = [];
+      const b = document.getElementById("listen");
+      if (b) { b.classList.remove("playing"); b.textContent = "▶ Listen"; }
+    }
+    function preview() {
+      ensureAudio();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      const { notes } = generateNotes();
+      const tone = TONES[genre().tone] || TONES.piano;
+      const spb = 60 / LIVE.tempo;
+      const start = audioCtx.currentTime + 0.06;
+      let end = start;
+      for (const n of notes) {
+        const t0 = start + n.startTime * spb;
+        const dur = n.duration * spb;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = tone.type;
+        osc.frequency.value = 440 * Math.pow(2, (n.pitch - 69) / 12);
+        const peak = (n.velocity / 127) * tone.gain;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(peak, t0 + tone.attack);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + tone.release);
+        osc.connect(g).connect(master);
+        osc.start(t0); osc.stop(t0 + dur + tone.release + 0.02);
+        voices.push(osc);
+        end = Math.max(end, t0 + dur + tone.release);
+      }
+      const b = document.getElementById("listen");
+      b.classList.add("playing"); b.textContent = "■ Stop";
+      setTimeout(() => { if (voices.length) stopPreview(); }, (end - audioCtx.currentTime) * 1000 + 60);
+    }
+
+    // ── Output ───────────────────────────────────────────────────────────
+    function collectAdsr() {
+      if (!adsrOn) return null;
+      const v = (id) => Number(document.getElementById(id).value) / 100;
+      return { attack: v("adsr-a"), decay: v("adsr-d"), sustain: v("adsr-s"), release: v("adsr-r") };
+    }
+    function doGenerate() {
+      const { notes, lengthBeats, template } = generateNotes();
+      send({ action: "generate", notes, lengthBeats, clipName: progressionName(template), favorites: FAV, adsr: collectAdsr() });
+    }
+    function doSaveProgression() {
+      const { template, feel } = generateNotes();
+      FAV.progressions.unshift({
+        id: String(Date.now()), name: progressionName(template),
+        genre: genreId, mood: moodId, root, mode: modeName, template, feel, createdAt: Date.now(),
+      });
+      const b = document.getElementById("save");
+      b.classList.add("saved"); b.textContent = "★ Saved";
+      renderFavList();
+      setTimeout(() => { b.classList.remove("saved"); b.textContent = "☆ Save"; }, 1200);
+    }
+
+    // ── Wiring ───────────────────────────────────────────────────────────
+    function initSelectors() {
+      const keySel = document.getElementById("key");
+      NOTE_NAMES.forEach((n, i) => { const o = document.createElement("option"); o.value = i; o.textContent = n; if (i === root) o.selected = true; keySel.appendChild(o); });
+      keySel.addEventListener("change", e => { root = Number(e.target.value); pinnedTemplate = null; stopPreview(); renderAll(); });
+
+      const modeSel = document.getElementById("mode");
+      Object.keys(MODES).forEach(m => { const o = document.createElement("option"); o.value = m; o.textContent = m; if (m === modeName) o.selected = true; modeSel.appendChild(o); });
+      modeSel.addEventListener("change", e => { modeName = e.target.value; pinnedTemplate = null; stopPreview(); renderAll(); });
+    }
+
+    Object.keys(ADV_GROUPS).forEach(buildAdvGroup);
+    document.getElementById("adv-humanize").checked = true;
+    document.getElementById("adv-humanize").addEventListener("change", e => { advanced.humanize = e.target.checked; stopPreview(); });
+    document.getElementById("adv-reset").addEventListener("click", () => {
+      advanced = {}; adsrOn = false;
+      document.getElementById("adsr-on").checked = false;
+      document.getElementById("adsr-sliders").style.display = "none";
+      document.getElementById("adv-humanize").checked = true;
+      Object.keys(ADV_GROUPS).forEach(buildAdvGroup);
+      pinnedTemplate = null; stopPreview(); renderCards();
+    });
+
+    document.getElementById("adsr-on").addEventListener("change", e => {
+      adsrOn = e.target.checked;
+      document.getElementById("adsr-sliders").style.display = adsrOn ? "" : "none";
+    });
+    ["a","d","s","r"].forEach(k => {
+      const el = document.getElementById("adsr-" + k);
+      el.addEventListener("input", () => { document.getElementById("adsr-" + k + "-v").textContent = el.value; });
+    });
+
+    document.getElementById("search").addEventListener("input", e => { query = e.target.value; renderGenres(); });
+    document.getElementById("variation").addEventListener("click", () => { pinnedTemplate = null; variationIndex++; stopPreview(); renderCards(); });
+    document.getElementById("listen").addEventListener("click", () => { if (voices.length) stopPreview(); else preview(); });
+    document.getElementById("save").addEventListener("click", doSaveProgression);
+    document.getElementById("generate").addEventListener("click", doGenerate);
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") send({ action: "save", favorites: FAV });
+      if (e.key === "Enter" && e.target.tagName !== "INPUT" && e.target.tagName !== "SELECT") doGenerate();
+    });
+
+    initSelectors();
+    renderAll();
+    renderFavList();
   </script>
 </body>
 </html>
