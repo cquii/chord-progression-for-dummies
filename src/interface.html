@@ -16,6 +16,11 @@
       --star: #ffc900;
       --radius: 6px;
     }
+    body.dark {
+      --ink: #fff;
+      --paper: #111;
+      --muted: rgba(255,255,255,0.55);
+    }
 
     html { height: 100%; }
     body {
@@ -30,7 +35,7 @@
     }
 
     /* Gumroad-style press: hard offset shadow that lifts on hover, presses on click. */
-    .btn, .chip, .seg button, select, .fav-item button {
+    .btn, .chip, .seg button, select, .fav-item button, .theme-btn {
       border: 1px solid var(--ink);
       background: var(--paper);
       color: var(--ink);
@@ -39,17 +44,18 @@
       cursor: pointer;
       transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.06s ease, color 0.06s ease;
     }
-    .btn:hover, .chip:hover, .seg button:hover, select:hover, .fav-item button:hover {
+    .btn:hover, .chip:hover, .seg button:hover, select:hover, .fav-item button:hover, .theme-btn:hover {
       transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink);
     }
-    .btn:active, .chip:active, .seg button:active, select:active, .fav-item button:active {
+    .btn:active, .chip:active, .seg button:active, select:active, .fav-item button:active, .theme-btn:active {
       transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink);
     }
 
-    .head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-    .head h1 { font-size: 14px; font-weight: 700; letter-spacing: 0.01em; }
+    .head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .head h1 { font-size: 14px; font-weight: 700; letter-spacing: 0.01em; flex: 1; }
     .head .key { font-size: 11px; color: var(--muted); }
     .head .key b { color: var(--ink); font-weight: 700; }
+    .theme-btn { padding: 4px 9px; font-size: 13px; line-height: 1; }
 
     .label { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 11px 0 6px; }
     .label:first-child { margin-top: 0; }
@@ -126,6 +132,7 @@
   <header class="head">
     <h1>Chord Progression for Dummies</h1>
     <div class="key" id="keyinfo">—</div>
+    <button class="theme-btn" id="theme" title="Toggle dark mode">☾</button>
   </header>
 
   <input id="search" class="search" type="text" placeholder="Search genres…" autocomplete="off" />
@@ -715,6 +722,19 @@
       if (e.key === "Enter" && e.target.tagName !== "INPUT" && e.target.tagName !== "SELECT") doGenerate();
     });
 
+    // Theme — persisted in the favorites file so the last look always returns.
+    let theme = FAV.theme === "dark" ? "dark" : "light";
+    function applyTheme() {
+      document.body.classList.toggle("dark", theme === "dark");
+      document.getElementById("theme").textContent = theme === "dark" ? "☀" : "☾";
+      FAV.theme = theme;
+    }
+    document.getElementById("theme").addEventListener("click", () => {
+      theme = theme === "dark" ? "light" : "dark";
+      applyTheme();
+    });
+
+    applyTheme();
     initSelectors();
     renderAll();
     renderFavList();

@@ -27,7 +27,7 @@ type LiveContext = {
   tempo: number;
 };
 
-type FavoritesFile = { genres: string[]; progressions: unknown[] };
+type FavoritesFile = { genres: string[]; progressions: unknown[]; theme?: "light" | "dark" };
 
 type Adsr = { attack: number; decay: number; sustain: number; release: number };
 
@@ -106,7 +106,7 @@ export function activate(activation: ActivationContext) {
   }
 
   function readFavorites(): FavoritesFile {
-    const empty: FavoritesFile = { genres: [], progressions: [] };
+    const empty: FavoritesFile = { genres: [], progressions: [], theme: "light" };
     const file = favoritesPath();
     if (!file) return empty;
     try {
@@ -114,6 +114,7 @@ export function activate(activation: ActivationContext) {
       return {
         genres: Array.isArray(parsed.genres) ? parsed.genres : [],
         progressions: Array.isArray(parsed.progressions) ? parsed.progressions : [],
+        theme: parsed.theme === "dark" ? "dark" : "light",
       };
     } catch {
       return empty;

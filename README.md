@@ -9,7 +9,11 @@ behind an **Advanced** button.
 > **Status: implemented (v1.0.0).** Genre/mood engine, favorites, per-genre preview and the
 > Advanced panel are built. Packaged `.ablx` is ready to install.
 
-![Panel](docs/screenshot.png)
+![Light and dark](docs/screenshot.png)
+![Dark](docs/screenshot-dark.png)
+
+Minimal black-and-white UI with Gumroad-style press buttons. A **dark mode** toggle (☾ / ☀)
+sits in the header, and your last-used theme is **remembered** across sessions.
 
 ## What it does
 
