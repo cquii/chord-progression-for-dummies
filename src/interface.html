@@ -31,7 +31,7 @@
       font-size: 11px;
       font-weight: 500;
       -webkit-font-smoothing: antialiased;
-      padding: 10px;
+      padding: 10px 10px 52px;
     }
 
     /* Gumroad-style press: hard offset shadow that lifts on hover, presses on click. */
@@ -84,16 +84,23 @@
     .field { display: flex; flex-direction: column; gap: 4px; }
     select { height: 25px; padding: 0 7px; outline: none; }
 
-    /* Scale piano — 2 octaves; scale notes blink pure yellow, root steady yellow */
-    .piano { position: relative; display: flex; height: 30px; border: 1px solid var(--ink); border-radius: var(--radius); overflow: hidden; }
+    /* Scale piano — floating corner badge ("ad"), 2 octaves, blinking yellow scale */
+    .piano-ad {
+      position: fixed; bottom: 12px; right: 12px; z-index: 50;
+      width: 152px; padding: 5px 6px 6px;
+      background: var(--paper); border: 1px solid var(--ink);
+      border-radius: var(--radius); box-shadow: 2px 2px 0 var(--ink);
+    }
+    .piano-cap { font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    #pianoNote { color: var(--ink); }
+    .piano { position: relative; display: flex; height: 26px; border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; }
     .wkey { flex: 1; border-right: 1px solid var(--ink); background: var(--paper); }
     .wkey:last-child { border-right: none; }
-    .bkey { position: absolute; top: 0; width: 6px; height: 62%; transform: translateX(-50%); background: var(--ink); border: 1px solid var(--ink); border-top: none; z-index: 2; }
+    .bkey { position: absolute; top: 0; width: 5px; height: 62%; transform: translateX(-50%); background: var(--ink); border: 1px solid var(--ink); border-top: none; z-index: 2; }
     .wkey.lit, .bkey.lit { background: var(--star); animation: blink 1.05s ease-in-out infinite; }
     .wkey.root, .bkey.root { background: var(--star); animation: none; box-shadow: 0 0 5px var(--star); }
     .wkey:hover, .bkey:hover { outline: 2px solid var(--star); outline-offset: -2px; cursor: pointer; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-    #pianoNote { color: var(--ink); font-weight: 700; }
 
     /* Result cards — flat, boxed, no shadow */
     .result { background: var(--paper); border: 1px solid var(--ink); border-radius: var(--radius); padding: 7px; margin-top: 5px; }
@@ -168,9 +175,6 @@
     </div>
   </div>
 
-  <span class="label">Scale <span id="pianoNote"></span></span>
-  <div class="piano" id="piano"></div>
-
   <span class="label">Result</span>
   <div class="result"><div class="cards" id="cards"></div></div>
 
@@ -215,6 +219,11 @@
     <summary>Favorites</summary>
     <div class="drawer"><div class="fav-list" id="fav-list"></div></div>
   </details>
+
+  <div class="piano-ad" id="piano-ad">
+    <div class="piano-cap">Scale <span id="pianoNote"></span></div>
+    <div class="piano" id="piano"></div>
+  </div>
 
   <script>
     const APP = __APP_DATA__;
