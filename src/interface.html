@@ -93,10 +93,11 @@
     }
     .piano-cap { font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
     #pianoNote { color: var(--ink); }
-    .piano { position: relative; display: flex; height: 26px; border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; }
-    .wkey { flex: 1; border-right: 1px solid var(--ink); background: var(--paper); }
+    /* Keys are always a real piano (white/black) in both themes; only the scale heats up to yellow. */
+    .piano { position: relative; display: flex; height: 26px; border: 1px solid #000; border-radius: 3px; overflow: hidden; background: #fff; }
+    .wkey { flex: 1; border-right: 1px solid #000; background: #fff; }
     .wkey:last-child { border-right: none; }
-    .bkey { position: absolute; top: 0; width: 5px; height: 62%; transform: translateX(-50%); background: var(--ink); border: 1px solid var(--ink); border-top: none; z-index: 2; }
+    .bkey { position: absolute; top: 0; width: 5px; height: 62%; transform: translateX(-50%); background: #000; border: 1px solid #000; border-top: none; z-index: 2; }
     .wkey.lit, .bkey.lit { background: var(--star); animation: blink 1.05s ease-in-out infinite; }
     .wkey.root, .bkey.root { background: var(--star); animation: none; box-shadow: 0 0 5px var(--star); }
     .wkey:hover, .bkey:hover { outline: 2px solid var(--star); outline-offset: -2px; cursor: pointer; }
