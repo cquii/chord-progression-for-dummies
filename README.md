@@ -34,6 +34,14 @@ See the design docs:
 - [docs/DESIGN.md](docs/DESIGN.md) — architecture, data model, UI.
 - [docs/CONTENT-MODEL.md](docs/CONTENT-MODEL.md) — genres, moods, templates, feel.
 
+## Install
+
+1. Download **[`Chord-Progression-for-Dummies-1.0.0.ablx`](https://github.com/cquii/chord-progression-for-dummies/releases/latest)** from the latest release.
+2. Ableton Live 12 Beta → **Settings → Extensions** → choose the `.ablx` (Developer Mode **off**).
+3. Quit Live fully (Cmd+Q) and reopen.
+
+Requires Ableton Live 12 Beta (or later) with Extensions support.
+
 ## Usage
 
 Right-click an empty **Session** clip slot → **Chord Progression for Dummies…**.
